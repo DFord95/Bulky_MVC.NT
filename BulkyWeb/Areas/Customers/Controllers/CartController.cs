@@ -163,6 +163,7 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
 
                 _unitOfWork.OrderHeader.UpdateStripePaymentId(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
                 _unitOfWork.Save();
+
                 Response.Headers.Add("Location", session.Url);
                 return new StatusCodeResult(303);
             }
@@ -172,27 +173,27 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
 
         public IActionResult OrderConfirmation(int id)
         {
-            //OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
 
-            //if (orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
-            //{
-            //    //Customer Order
-            //    var service = new SessionService();
-            //    Session session = service.Get(orderHeader.SessionId);
+            if (orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
+            {
+                //Customer Order
+                var service = new SessionService();
+                Session session = service.Get(orderHeader.SessionId);
 
-            //    if (session.PaymentStatus.ToLower() == "paid")
-            //    {
-            //        _unitOfWork.OrderHeader.UpdateStripePaymentId(id, session.Id, session.PaymentIntentId);
-            //        _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
-            //        _unitOfWork.Save();
-            //    }
-            //}
+                if (session.PaymentStatus.ToLower() == "paid")
+                {
+                    _unitOfWork.OrderHeader.UpdateStripePaymentId(id, session.Id, session.PaymentIntentId);
+                    _unitOfWork.OrderHeader.UpdateStatus(id, SD.StatusApproved, SD.PaymentStatusApproved);
+                    _unitOfWork.Save();
+                }
+            }
 
-            //List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart
-            //    .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart
+                .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
 
-            //_unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
-            //_unitOfWork.Save();
+            _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+            _unitOfWork.Save();
 
             return View(id);
         }
