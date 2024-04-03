@@ -130,10 +130,10 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
                 //stripe logic
 
                 var domain = "https://localhost:7239/";
-                var options = new Stripe.Checkout.SessionCreateOptions
+                var options = new SessionCreateOptions
                 {
-                    SuccessUrl = domain + $"Customers/Cart/OrderConfirmation?id{ShoppingCartVM.OrderHeader.Id}",
-                    CancelUrl = domain + "Customers/Cart/Index",
+                    SuccessUrl = domain+ $"Customers/Cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain+ "Customers/Cart/Index",
                     LineItems = new List<SessionLineItemOptions>(),
                     Mode = "payment",
                 };
@@ -172,7 +172,7 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
 
         public IActionResult OrderConfirmation(int id)
         {
-            OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties:"ApplicationUser");
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.Get(u => u.Id == id, includeProperties: "ApplicationUser");
 
             if (orderHeader.PaymentStatus != SD.PaymentStatusDelayedPayment)
             {
