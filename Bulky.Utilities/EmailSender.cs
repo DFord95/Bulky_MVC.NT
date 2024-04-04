@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +10,23 @@ using System.Threading.Tasks;
 
 namespace BulkyBook.Utilities
 {
-    public class EmailSender : IEmailSender
+    public class EmailSender 
     {
-        public Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public void send(string UserName, string Subject, string body)
         {
             //logic to send email
-            return Task.CompletedTask;
+            var email = new MimeMessage();
+            email.From.Add(MailboxAddress.Parse("webmaster-noreply@dot.state.al.us"));
+            email.To.Add(MailboxAddress.Parse(UserName));
+            email.Subject = "Confirm Your Account";
+            email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = body };
+
+            using var smtp = new SmtpClient();
+
+            //Here i'm using smtp.ethereal to test, you can also use another SMTP server providers.  
+            smtp.Connect("CSSENDMAIL.DOT.STATE.AL.US", 25, MailKit.Security.SecureSocketOptions.None);
+            smtp.Send(email);
+            smtp.Disconnect(true);
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Razor.Language;
 using Stripe.Checkout;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 namespace BulkyBookWeb.Areas.Customers.Controllers
 {
@@ -15,11 +16,14 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
     public class CartController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly EmailSender _emailSender;
+
         [BindProperty]
         public ShoppingCartVM ShoppingCartVM { get; set; }
-        public CartController(IUnitOfWork unitOfWork)
+        public CartController(IUnitOfWork unitOfWork, EmailSender emailSender)
         {
             _unitOfWork = unitOfWork;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -191,6 +195,10 @@ namespace BulkyBookWeb.Areas.Customers.Controllers
 
                 HttpContext.Session.Clear();
             }
+
+            _emailSender.send(orderHeader.ApplicationUser.Email,
+                "New Order - Bulky Book",
+                $"New Order Created - Your Order Id is: {orderHeader.Id}.");
 
             List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart
                 .GetAll(u => u.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
